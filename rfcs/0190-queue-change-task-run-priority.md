@@ -12,7 +12,7 @@ This RFC proposes new API method that would allow to change the priority of the 
 ## Motivation
 
 There might be several use-cases when some worker pool has a lot of pending tasks and there is a need
-to move some more important task to the top of the waiting list, or also move down less important ones.
+to move some more important tasks to the top of the waiting list, or also move down less important ones.
 
 Instead of cancelling existing tasks we can instead choose to change task run priorities.
 
@@ -36,19 +36,16 @@ This will also require introduction of the new scopes (anyOf):
 
 * `queue:change-task-run-priority-in-queue:<taskQueueId>`
 * `queue:change-task-run-priority:<taskId>`
-
+* `queue:lower-task-run-priority:<taskId>` to only allow lowering the priority
+* `queue:raise-task-run-priority:<taskId>` to only allow raising the priority
 
 Current order for picking up tasks is based on the task priority and insertion time (FIFO).
 This RFC proposes to change the priority only, and leave the insertion time as is.
-
 
 ### Other considerations
 
 Chain of Trust validation might be broken if we change too much of the task definition or run.
 We need to make sure we don't break it with this change.
-
-
-
 
 ## Implementation
 
