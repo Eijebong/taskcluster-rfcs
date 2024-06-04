@@ -66,7 +66,7 @@ This RFC proposes to change the priority only, and leave the insertion time as i
 
 ### Other considerations
 
-To insure that Chain of Trust validation is not affected, we aim to keep the original task definition
+To ensure that Chain of Trust validation is not affected, we aim to keep the original task definition
 and store the new priority in a separate column.
 
 ## Implementation
