@@ -7,7 +7,7 @@
 Since we refactored queue internals it became possible to see what tasks are pending for a particular
 worker pool / task queue.
 
-This RFC proposes new API method that would allow to change the priority of the existing task run / task group.
+This RFC proposes a new API method that would allow changing the priority of the existing task run / task group.
 
 ## Motivation
 
@@ -30,19 +30,21 @@ Queue service will expose new methods:
 * `queue.changeTaskPriority(taskId, newPriority)`
 * `queue.changeTaskGroupPriority(taskGroupId, newPriority)`
 
-New priority would be stored along the task definition for a given task or all tasks within the task group.
+New priority would replace the original one for a given task or all tasks within the task group.
 
 The process to change single task will be as follows:
 
-* new task priority will be stored in the database as `task.priority_override` column
-* if task was scheduled already, its priority in the `queue_pending_tasks` table will be updated
-* if the tasks run fails and new one is created, it will check if `task.priority_override` is set and use it instead of the original priority
+* new task priority will be stored in the database as `task.priority` (overriding existing value)
+* additionally, if task was scheduled already, its priority will be updated in the `queue_pending_tasks` table
 
 The process to change the whole task group will be as follows:
 
-* all tasks in the task group will be updated to store the new priority in the `task.priority_override` column
-* all currently scheduled tasks would be attempted to be updated in the `queue_pending_tasks` table
-* all unscheduled tasks and tasks that will be restarted will use the new priority
+* all tasks in the task group will be updated to store the new priority in the `task.priority` column
+* additionally, all currently scheduled tasks would be attempted to be updated in the `queue_pending_tasks` table
+
+Tasks would only be updated if they are not resolved yet and before their deadlines.
+
+> **Note**: To allow changing the priority of the task without breaking CoT validations, it would be necessary to add `"priority"` to the [`ignore_keys`](https://github.com/mozilla-releng/scriptworker/blob/454c4dd0bae7958140ea8d19adf3670e705ace09/src/scriptworker/cot/verify.py#L910)
 
 ### New scopes
 
@@ -63,11 +65,6 @@ And for task group:
 
 Current order for picking up tasks is based on the task priority and insertion time (FIFO).
 This RFC proposes to change the priority only, and leave the insertion time as is.
-
-### Other considerations
-
-To ensure that Chain of Trust validation is not affected, we aim to keep the original task definition
-and store the new priority in a separate column.
 
 ## Implementation
 
