@@ -46,6 +46,17 @@ Tasks would only be updated if they are not resolved yet and before their deadli
 
 > **Note**: To allow changing the priority of the task without breaking CoT validations, it would be necessary to add `"priority"` to the [`ignore_keys`](https://github.com/mozilla-releng/scriptworker/blob/454c4dd0bae7958140ea8d19adf3670e705ace09/src/scriptworker/cot/verify.py#L910)
 
+### Events
+
+Since Taskcluster doesn't have any built-in auditing tools, it would be beneficial to have events for the priority change.
+
+Following events would be emitted:
+
+* `task-priority-changed` with `taskId`, `existingPriority` and `newPriority`
+* `task-group-priority-changed` with `taskGroupId`, `newPriority`
+
+When the task group priority is changed, the event will be emitted for each task in the group additionally.
+
 ### New scopes
 
 This will also require introduction of the new scopes (anyOf):
